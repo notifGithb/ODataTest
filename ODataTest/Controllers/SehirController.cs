@@ -26,9 +26,9 @@ namespace ODataTest.Controllers
 
         [HttpGet]
         [EnableQuery]
-        public ActionResult GetSehirler(ODataQueryOptions<Sehir> options)
+        public ActionResult Get()
         {
-            var result = _sehirServisi.SehirleriGetir().AsQueryable();
+            var result = _sehirServisi.SehirleriGetir();
 
             return Ok(result);
         }
