@@ -5,22 +5,21 @@ using Microsoft.AspNetCore.OData.Query;
 using Microsoft.EntityFrameworkCore;
 using ODataTest.Context;
 using ODataTest.DTOs;
-using ODataTest.Models;
 using ODataTest.Servisler;
 
 namespace ODataTest.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class SehirController(ODataTestContext _context, IMapper mapper) : ControllerBase
+    public class SehirController(ISehirServisi _sehirServisi, ODataTestContext _context, IMapper mapper) : ControllerBase
     {
 
-        //[HttpPost]
-        //public async Task<IActionResult> Olustur()
-        //{
-        //    await _sehirServisi.Olustur();
-        //    return Ok();
-        //}
+        [HttpPost]
+        public async Task<IActionResult> Olustur()
+        {
+            await _sehirServisi.Olustur();
+            return Ok();
+        }
 
 
         [HttpGet]
