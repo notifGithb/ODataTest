@@ -1,5 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
+using Microsoft.EntityFrameworkCore;
+using ODataTest.Context;
+using ODataTest.DTOs;
 using ODataTest.Models;
 using ODataTest.Servisler;
 
@@ -7,34 +12,27 @@ namespace ODataTest.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class SehirController : ControllerBase
+    public class SehirController(ODataTestContext _context, IMapper mapper) : ControllerBase
     {
-        private readonly SehirServisi _sehirServisi;
 
-        public SehirController()
-        {
-            _sehirServisi = new SehirServisi();
-        }
-
-        //[HttpGet]
-        //public ActionResult<IEnumerable<Sehir>> Gets()
+        //[HttpPost]
+        //public async Task<IActionResult> Olustur()
         //{
-        //    var cities = _sehirServisi.SehirleriGetir();
-        //    return Ok(cities);
+        //    await _sehirServisi.Olustur();
+        //    return Ok();
         //}
 
 
         [HttpGet]
         [EnableQuery]
-        public ActionResult Get()
+        public IActionResult Get()//IQueryable ve dto döndürecek
         {
-            var result = _sehirServisi.SehirleriGetir();
-
-            return Ok(result);
+            var result = _context.Sehirler.Include(s => s.Ilceler).AsQueryable();
+            return Ok(result.ProjectTo<SehirDTO>(mapper.ConfigurationProvider));
         }
     }
 
-    #region Sehirin Id si 1 den büyük olan ilçeleri getir
+    #region http://localhost:5141/api/Sehir?$filter=Id eq 1&$expand=Ilceler($filter=Id gt 1;$select=isim)
     //    "http://localhost:5141/api/Sehir?$filter=Id eq 1&$expand=Ilceler($filter=Id gt 1;$select=isim)"
 
     //        {
@@ -59,7 +57,7 @@ namespace ODataTest.Controllers
     //}
     #endregion
 
-    #region http://localhost:5141/api/Sehir?$select=Id,Isim&$expand=Ilceler($filter=Derece gt 16;$select=isim,derece)
+    #region http://localhost:5141/api/Sehir?$select=Isim&$expand=Ilceler($filter=Derece gt 16;$select=isim,derece)
     //{
     //"$id": "1",
     //"$values": [

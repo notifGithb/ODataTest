@@ -1,22 +1,28 @@
 using Microsoft.AspNetCore.OData;
+using Microsoft.EntityFrameworkCore;
+using ODataTest.Context;
+using ODataTest.Servisler;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-builder.Services
-    .AddControllers()
+builder.Services.AddControllers()
     .AddJsonOptions(i => i.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve) // circular dependency önlendi
     .AddOData(opt => opt.EnableQueryFeatures());
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddDbContext<ODataTestContext>(options => options.UseSqlServer(
+    builder.Configuration.GetConnectionString("DefaultConnectionString")));
+
+builder.Services.AddScoped<ISehirServisi, SehirServisi>();
+
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
