@@ -1,14 +1,20 @@
 using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
 using ODataTest.Context;
+using ODataTest.Filters;
 using ODataTest.Servisler;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers()
+builder.Services.AddControllers(opt =>
+{
+    opt.Filters.Add(new MyAsyncActionFilter());
+})
     .AddJsonOptions(i => i.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve) // circular dependency önlendi
     .AddOData(opt => opt.EnableQueryFeatures());
+
+builder.Services.AddScoped<MyAsyncActionFilter>();
 
 builder.Services.AddDbContext<ODataTestContext>(options => options.UseSqlServer(
     builder.Configuration.GetConnectionString("DefaultConnectionString")));
@@ -32,7 +38,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
+app.UseODataBatching();
+app.UseODataQueryRequest();
+app.UseODataRouteDebug();
 app.MapControllers();
 
 app.Run();

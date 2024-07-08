@@ -1,8 +1,7 @@
 ﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.OData.Routing.Controllers;
 using ODataTest.Context;
 using ODataTest.DTOs;
 using ODataTest.Servisler;
@@ -11,7 +10,7 @@ namespace ODataTest.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class SehirController(ISehirServisi _sehirServisi, ODataTestContext _context, IMapper mapper) : ControllerBase
+    public class SehirController(ISehirServisi _sehirServisi, ODataTestContext _context, IMapper mapper) : ODataController
     {
 
         [HttpPost]
@@ -24,12 +23,31 @@ namespace ODataTest.Controllers
 
         [HttpGet]
         [EnableQuery]
-        public IActionResult Get()//IQueryable ve dto döndürecek
+        public IActionResult Get()
         {
-            var result = _context.Sehirler.Include(s => s.Ilceler).AsQueryable();
-            return Ok(result.ProjectTo<SehirDTO>(mapper.ConfigurationProvider));
+            //var result = _context.Sehirler.AsQueryable();
+            var result = _context.Sehirler
+                .Select(s => new SehirDTO
+                {
+                    Isim = s.Isim,
+                    PlakaNumarasi = s.PlakaNumarasi,
+                    Derece = s.Derece,
+                    Ilceler = s.Ilceler.Select(i => new IlceDTO
+                    {
+                        Isim = i.Isim,
+                        Derece = i.Derece,
+                        SehirId = i.SehirId
+                    }).ToList()
+                });
+
+            return Ok(result);
         }
     }
+
+    #region http://localhost:5141/api/Sehir?$expand=Ilceler($select=isim)&pageNumber=1&pageSize=1
+
+    #endregion
+
 
     #region http://localhost:5141/api/Sehir?$filter=Id eq 1&$expand=Ilceler($filter=Id gt 1;$select=isim)
     //    "http://localhost:5141/api/Sehir?$filter=Id eq 1&$expand=Ilceler($filter=Id gt 1;$select=isim)"
