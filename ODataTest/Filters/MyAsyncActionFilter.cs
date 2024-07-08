@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
+using ODataTest.DTOs;
+using ODataTest.Models;
 
 namespace ODataTest.Filters
 {
@@ -12,13 +14,11 @@ namespace ODataTest.Filters
 
             if (actionContext.Result is ObjectResult objectResult && objectResult.Value is IQueryable<object> queryable)
             {
-                var query = context.HttpContext.Request.Query;
-                int pageNumber = query.ContainsKey("pageNumber") ? int.Parse(query["pageNumber"].FirstOrDefault()) : 1;
-                int pageSize = query.ContainsKey("pageSize") ? int.Parse(query["pageSize"].FirstOrDefault()) : 5;
-                
-                var data = await queryable.ToListAsync();
+                var headers = context.HttpContext.Request.Headers;
+                int pageNumber = headers.ContainsKey("pageNumber") ? int.Parse(headers["pageNumber"].FirstOrDefault()) : 1;
+                int pageSize = headers.ContainsKey("pageSize") ? int.Parse(headers["pageSize"].FirstOrDefault()) : 5;
 
-                var paginatedData = data.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+                var paginatedData = await queryable.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
 
                 objectResult.Value = paginatedData;
             }
