@@ -40,12 +40,10 @@ namespace ODataTest.Middleware
 
                 var jsonResult = JsonConvert.SerializeObject(sehirDTOs);
 
-                context.Response.Body = originalBodyStream; // Restore the original stream
-                context.Response.ContentType = "application/json";
-                context.Response.StatusCode = StatusCodes.Status200OK;
+                context.Response.Body = originalBodyStream;
                 await context.Response.WriteAsync(jsonResult);
 
-            }
+            } 
         }
     }
 
