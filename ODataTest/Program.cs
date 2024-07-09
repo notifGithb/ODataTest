@@ -7,9 +7,13 @@ using ODataTest.Servisler;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers().AddOData(opt => opt.EnableQueryFeatures());
+builder.Services.AddControllers(opt=>
+{
+    opt.Filters.Add(new MyAsyncActionFilter());
+}).AddOData(opt => opt.EnableQueryFeatures());
 
-//builder.Services.AddScoped<MyAsyncActionFilter>();
+
+builder.Services.AddScoped<MyAsyncActionFilter>();
 
 builder.Services.AddDbContext<ODataTestContext>(options => options.UseSqlServer(
     builder.Configuration.GetConnectionString("DefaultConnectionString")));
@@ -32,12 +36,9 @@ if (app.Environment.IsDevelopment())
 
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-app.MapControllers();
-
 
 app.UseMiddleware<ODataResponseManipulationMiddleware>();
-
+app.MapControllers();
 
 app.Run();
