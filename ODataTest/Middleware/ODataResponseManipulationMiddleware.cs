@@ -26,24 +26,14 @@ namespace ODataTest.Middleware
                 var responseBody = await new StreamReader(context.Response.Body).ReadToEndAsync();
                 context.Response.Body.Seek(0, SeekOrigin.Begin);
 
-                var json = JArray.Parse(responseBody);
-
-                var sehirDTOs = json.Select(dto => new SehirDTO
-                {
-                    Isim = dto["Isim"].ToObject<string>(),
-                    PlakaNumarasi = dto["PlakaNumarasi"].ToObject<int>(),
-                    Derece = dto["Derece"].ToObject<double>(),
-                    Ilceler = dto["Ilceler"].ToObject<List<IlceDTO>>()
-                })
-                .OrderBy(sehir => sehir.Derece)
-                .ToList();
+                var sehirDTOs = JsonConvert.DeserializeObject<List<SehirDTO>>(responseBody)!.OrderBy(sehir => sehir.Derece).ToList();
 
                 var jsonResult = JsonConvert.SerializeObject(sehirDTOs);
 
                 context.Response.Body = originalBodyStream;
                 await context.Response.WriteAsync(jsonResult);
 
-            } 
+            }
         }
     }
 
