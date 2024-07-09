@@ -26,7 +26,11 @@ namespace ODataTest.Middleware
                 var responseBody = await new StreamReader(context.Response.Body).ReadToEndAsync();
                 context.Response.Body.Seek(0, SeekOrigin.Begin);
 
-                var sehirDTOs = JsonConvert.DeserializeObject<List<SehirDTO>>(responseBody)!.OrderBy(sehir => sehir.Derece).ToList();
+                var sehirDTOs = JsonConvert.DeserializeObject<List<SehirDTO>>(responseBody);
+
+
+                //Veri üzerinde işlemlerin yapılabileceği alanlar.
+
 
                 var jsonResult = JsonConvert.SerializeObject(sehirDTOs);
 
