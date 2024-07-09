@@ -15,7 +15,6 @@ namespace ODataTest.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
-
             var originalBodyStream = context.Response.Body;
             using (var responseBodyStream = new MemoryStream())
             {
@@ -27,34 +26,34 @@ namespace ODataTest.Middleware
                 var responseBody = await new StreamReader(context.Response.Body).ReadToEndAsync();
                 context.Response.Body.Seek(0, SeekOrigin.Begin);
 
-                var manipulatedResponseBody = ManipulateResponse(responseBody);
-                context.Response.Headers["Content-Type"] = "application/json";
+                var json = JArray.Parse(responseBody);
 
+                var sehirDTOs = json.Select(dto => new SehirDTO
+                {
+                    Isim = dto["Isim"].ToObject<string>(),
+                    PlakaNumarasi = dto["PlakaNumarasi"].ToObject<int>(),
+                    Derece = dto["Derece"].ToObject<double>(),
+                    Ilceler = dto["Ilceler"].ToObject<List<IlceDTO>>()
+                })
+                .OrderBy(sehir => sehir.Derece)
+                .ToList();
 
-                await context.Response.WriteAsync(manipulatedResponseBody);
-                context.Response.Body = originalBodyStream;
+                var jsonResult = JsonConvert.SerializeObject(sehirDTOs);
+
+                context.Response.Body = originalBodyStream; // Restore the original stream
+                context.Response.ContentType = "application/json";
+                context.Response.StatusCode = StatusCodes.Status200OK;
+                await context.Response.WriteAsync(jsonResult);
+
             }
-
-            await _next(context);
-
         }
-        private string ManipulateResponse(string responseBody)
+    }
+
+    public static class MiddlewareExtensions
+    {
+        public static IApplicationBuilder UseODataResponseManipulation(this IApplicationBuilder app)
         {
-            var json = JArray.Parse(responseBody);
-
-            var sehirDTOs = json.Select(jToken => new SehirDTO
-            {
-                Isim = jToken["Isim"].ToObject<string>(),
-                PlakaNumarasi = jToken["PlakaNumarasi"].ToObject<int>(),
-                Derece = jToken["Derece"].ToObject<double>(),
-                Ilceler = jToken["Ilceler"].ToObject<List<IlceDTO>>()
-            })
-            .OrderBy(sehir => sehir.Derece)
-            .ToList();
-
-            var jsonResult = JsonConvert.SerializeObject(sehirDTOs);
-
-            return jsonResult;
+            return app.UseMiddleware<ODataResponseManipulationMiddleware>();
         }
     }
 
