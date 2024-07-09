@@ -26,7 +26,7 @@ namespace ODataTest.Controllers
         public IActionResult Get()
         {
             //var result = _context.Sehirler.AsQueryable();
-            var result = _context.Sehirler
+            IQueryable<SehirDTO> result = _context.Sehirler
                 .Select(s => new SehirDTO
                 {
                     Isim = s.Isim,
@@ -38,16 +38,19 @@ namespace ODataTest.Controllers
                         Derece = i.Derece,
                         SehirId = i.SehirId
                     }).ToList()
-                });
+                }).AsQueryable();
 
             return Ok(result);
         }
     }
 
-    #region http://localhost:5141/api/Sehir?$expand=Ilceler($select=isim)&pageNumber=1&pageSize=1
+    #region http://localhost:5141/api/Sehir?$expand=Ilceler
 
     #endregion
 
+    #region http://localhost:5141/api/Sehir?$expand=Ilceler($select=isim)&pageNumber=1&pageSize=1
+
+    #endregion
 
     #region http://localhost:5141/api/Sehir?$filter=Id eq 1&$expand=Ilceler($filter=Id gt 1;$select=isim)
     //    "http://localhost:5141/api/Sehir?$filter=Id eq 1&$expand=Ilceler($filter=Id gt 1;$select=isim)"
