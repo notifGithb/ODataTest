@@ -3,16 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using ODataTest.Context;
 using ODataTest.Filters;
 using ODataTest.Servisler;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers(opt =>
 {
     opt.Filters.Add(new MyAsyncActionFilter());
-})
-    .AddJsonOptions(i => i.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve) // circular dependency önlendi
-    .AddOData(opt => opt.EnableQueryFeatures());
+}).AddOData(opt => opt.EnableQueryFeatures());
 
 builder.Services.AddScoped<MyAsyncActionFilter>();
 

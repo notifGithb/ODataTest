@@ -26,7 +26,7 @@ namespace ODataTest.Controllers
         public IActionResult Get()
         {
             //var result = _context.Sehirler.AsQueryable();
-            IQueryable<SehirDTO> result = _context.Sehirler
+            var result = _context.Sehirler
                 .Select(s => new SehirDTO
                 {
                     Isim = s.Isim,
